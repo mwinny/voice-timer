@@ -44,7 +44,7 @@ Pick whichever is easiest:
 
 ## Workout caveats (iOS)
 
-- **Screen auto-lock pauses recognition.** iOS Safari has no Wake Lock API. Before workout, go to Settings → Display → Auto-Lock → **Never**, or ask me to add the NoSleep.js workaround.
+- **Screen stays on automatically while running.** The app requests a screen wake lock (`navigator.wakeLock`) when you say (or tap) Go, and releases it on Finish. Requires iOS 16.4+ (any iPhone updated in the last ~3 years).
 - **Background ≠ supported.** When you switch apps or the screen turns off, recognition stops. Web Speech can't run in the background on iOS. Only a native Swift app could.
 - **iOS uses Apple's on-device recognition.** No internet required for the voice commands themselves on iPhone — just for the initial page load.
 

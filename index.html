@@ -219,6 +219,28 @@
     let accumulatedMs = 0;
     let tickHandle = null;
     let history = loadHistory();
+    let wakeLock = null;
+
+    async function acquireWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      if (wakeLock) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (e) {
+        // Browser may refuse if page isn't visible or no user gesture yet.
+      }
+    }
+    async function releaseWakeLock() {
+      if (!wakeLock) return;
+      try { await wakeLock.release(); } catch {}
+      wakeLock = null;
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state === 'running') {
+        acquireWakeLock();
+      }
+    });
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
@@ -255,6 +277,7 @@
       startTime = Date.now();
       state = 'running';
       startTick();
+      acquireWakeLock();
       render();
     }
 
@@ -271,6 +294,7 @@
       if (state === 'running') accumulatedMs += Date.now() - startTime;
       const finalMs = accumulatedMs;
       stopTick();
+      releaseWakeLock();
       history.unshift({ ms: finalMs, at: Date.now() });
       saveHistory();
       renderHistory();
